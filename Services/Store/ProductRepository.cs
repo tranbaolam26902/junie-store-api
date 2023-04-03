@@ -12,10 +12,15 @@ namespace Services.Store {
 
         public async Task<IList<Product>> GetCollectionProductsBySlugAsync(string slug, CancellationToken cancellationToken = default) {
             return await _context.Set<Product>()
-                .Include(p => p.Collection)
                 .Include(p => p.Images)
                 .Where(p => p.Collection.Slug == slug)
                 .ToListAsync(cancellationToken);
+        }
+
+        public async Task<Product> GetProductBySlugAsync(string slug, CancellationToken cancellationToken = default) {
+            return await _context.Set<Product>()
+                .Include(p => p.Images)
+                .FirstOrDefaultAsync(p => p.Slug == slug, cancellationToken);
         }
     }
 }

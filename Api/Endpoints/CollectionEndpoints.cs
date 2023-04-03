@@ -1,5 +1,6 @@
 ﻿using Api.Models;
 using Core.DTO;
+using Core.Entities;
 using MapsterMapper;
 using Services.Store;
 using System.Net;
@@ -13,6 +14,10 @@ namespace Api.Endpoints {
                 .WithName("GetCollectionBySlug")
                 .Produces<ApiResponse<CollectionDTO>>();
 
+            routeGroupBuilder.MapGet("/{slug:regex(^[a-z0-9_-]+$)}/products", GetProductsByCollectionSlug)
+                .WithName("GetProductsByCollectionSlug")
+                .Produces<ApiResponse<IList<Product>>>();
+
             return app;
         }
 
@@ -25,6 +30,13 @@ namespace Api.Endpoints {
             return collection != null
                 ? Results.Ok(ApiResponse.Success(mapper.Map<CollectionDTO>(collection)))
                 : Results.Ok(ApiResponse.Fail(HttpStatusCode.NotFound, "Không tìm thấy bộ sưu tập!"));
+        }
+
+        private static async Task<IResult> GetProductsByCollectionSlug(
+            string slug,
+            IProductRepository productRepository,
+            IMapper mapper) {
+            return Results.Ok(ApiResponse.Success(mapper.Map<IList<ProductDTO>>(await productRepository.GetCollectionProductsBySlugAsync(slug))));
         }
     }
 }
