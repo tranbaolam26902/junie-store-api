@@ -36,7 +36,7 @@ namespace Data.Mappings {
 
             builder.HasMany(o => o.OrderProducts)
                 .WithOne(o => o.Order)
-                .HasForeignKey(o => o.Id)
+                .HasForeignKey(o => o.OrderId)
                 .HasConstraintName("FK_Orders_OrderProducts")
                 .OnDelete(DeleteBehavior.Cascade);
         }

@@ -12,7 +12,7 @@ namespace Data.Mappings {
                 .HasDefaultValue(1);
 
             builder.HasKey(o => new {
-                o.Id,
+                o.OrderId,
                 o.ProductId
             });
         }
