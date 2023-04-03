@@ -11,6 +11,7 @@ namespace Api.Extensions {
 
             builder.Services.AddScoped<IDataSeeder, DataSeeder>();
             builder.Services.AddScoped<IMediaManager, LocalFileSystemMediaManager>();
+            builder.Services.AddScoped<ICollectionRepository, CollectionRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
             return builder;

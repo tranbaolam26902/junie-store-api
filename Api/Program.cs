@@ -1,3 +1,4 @@
+using Api.Endpoints;
 using Api.Extensions;
 using Api.Mapsters;
 using Api.Validations;
@@ -14,6 +15,8 @@ var builder = WebApplication.CreateBuilder(args); {
 var app = builder.Build(); {
     app.SetupRequestPipeLine();
     app.UseDataSeeder();
+    app.MapCollectionEndpoints();
+    app.MapProductEndpoints();
 
     app.Run();
 }
