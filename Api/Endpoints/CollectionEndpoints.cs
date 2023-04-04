@@ -10,6 +10,10 @@ namespace Api.Endpoints {
         public static WebApplication MapCollectionEndpoints(this WebApplication app) {
             var routeGroupBuilder = app.MapGroup("/api/collections");
 
+            routeGroupBuilder.MapGet("/", GetCollections)
+                .WithName("GetCollections")
+                .Produces<ApiResponse<IList<CollectionDTO>>>();
+
             routeGroupBuilder.MapGet("/{slug:regex(^[a-z0-9_-]+$)}", GetCollectionBySlug)
                 .WithName("GetCollectionBySlug")
                 .Produces<ApiResponse<CollectionDTO>>();
@@ -19,6 +23,12 @@ namespace Api.Endpoints {
                 .Produces<ApiResponse<IList<Product>>>();
 
             return app;
+        }
+
+        private static async Task<IResult> GetCollections(
+            ICollectionRepository collectionRepository,
+            IMapper mapper) {
+            return Results.Ok(ApiResponse.Success(mapper.Map<IList<CollectionDTO>>(await collectionRepository.GetCollectionsAsync())));
         }
 
         private static async Task<IResult> GetCollectionBySlug(

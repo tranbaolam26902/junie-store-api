@@ -12,6 +12,8 @@
 
         public int Quantity { get; set; }
 
+        public CollectionDTO Collection { get; set; }
+
         public IList<ImageDTO> Images { get; set; }
     }
 }
