@@ -17,6 +17,7 @@ var app = builder.Build(); {
     app.UseDataSeeder();
     app.MapCollectionEndpoints();
     app.MapProductEndpoints();
+    app.MapOrderEndpoints();
 
     app.Run();
 }

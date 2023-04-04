@@ -16,6 +16,7 @@ namespace Data.Seeders {
                 return;
 
             var collections = AddCollections();
+            var discounts = AddDiscounts();
             var products = AddProducts(collections);
         }
 
@@ -65,13 +66,74 @@ namespace Data.Seeders {
                             Path = "/assets/images/collections/earrings/products/jane-02.webp"
                         },
                     }
-                }
+                },
+                new() {
+                    Name = "Bông tai Lumi",
+                    Slug = "bong-tai-lumi",
+                    Price = 195000,
+                    Discount = 0,
+                    Quantity = 50,
+                    Type = "E-LUMI-RG",
+                    Description = "Thêm chút phong cách trang nhã cho đôi tai của bạn với đôi bông tai ôm sát đầy tinh tế của Junie.\nBông taI Lumi được chế tác tỉ mỉ từ bạc 925 cao cấp, phủ một lớp dày vàng 14K, kết hợp với đá Cubic Zirconia lấp lánh tạo nên một thiết kế hoàn mỹ, là điểm nhấn duyên dáng trên vành tai nhỏ xinh của nàng.\nThiết kế đơn giản, nhưng không kém phần tinh tế để nàng có thể kết hợp cùng nhiều loại trang phục trong các dịp khác nhau như đi làm, đi chơi, thậm chí cả những bữa tiệc nhẹ nhàng.",
+                    UserManual = "Được làm từ những chất liệu cao cấp và bền bỉ nhưng do đặc tính cơ bản của chất liệu, Junie khuyến khích khách hàng nên tuân theo các nguyên tắc bảo quản trang sức nói chung.\nNên tháo trang sức ra trước khi tiếp xúc với bất kỳ môi trường ẩm hoặc ma sát mạnh (vd: rửa tay, đi ngủ, tắm rửa,...) để đảm bảo và duy trì độ bóng của sản phẩm cũng như kéo dài tuổi thọ của sản phẩm.",
+                    IsActive = true,
+                    Collection = collections[0],
+                    Images = new List<Image>() {
+                        new Image() {
+                            ProductId = 2,
+                            Path = "/assets/images/collections/earrings/products/lumi-01.webp"
+                        },
+                        new Image() {
+                            ProductId = 2,
+                            Path = "/assets/images/collections/earrings/products/lumi-02.webp"
+                        },
+                    }
+                },
+                new() {
+                    Name = "Bông tai Lela",
+                    Slug = "bong-tai-lela",
+                    Price = 175000,
+                    Discount = 0,
+                    Quantity = 50,
+                    Type = "E-LELA",
+                    Ratings = 2,
+                    Description = "Thêm chút phong cách trang nhã cho đôi tai của bạn với đôi bông tai ôm sát đầy tinh tế của Junie.\nBông taI Lumi được chế tác tỉ mỉ từ bạc 925 cao cấp, phủ một lớp dày vàng 14K, kết hợp với đá Cubic Zirconia lấp lánh tạo nên một thiết kế hoàn mỹ, là điểm nhấn duyên dáng trên vành tai nhỏ xinh của nàng.\nThiết kế đơn giản, nhưng không kém phần tinh tế để nàng có thể kết hợp cùng nhiều loại trang phục trong các dịp khác nhau như đi làm, đi chơi, thậm chí cả những bữa tiệc nhẹ nhàng.",
+                    UserManual = "Được làm từ những chất liệu cao cấp và bền bỉ nhưng do đặc tính cơ bản của chất liệu, Junie khuyến khích khách hàng nên tuân theo các nguyên tắc bảo quản trang sức nói chung.\nNên tháo trang sức ra trước khi tiếp xúc với bất kỳ môi trường ẩm hoặc ma sát mạnh (vd: rửa tay, đi ngủ, tắm rửa,...) để đảm bảo và duy trì độ bóng của sản phẩm cũng như kéo dài tuổi thọ của sản phẩm.",
+                    IsActive = true,
+                    Collection = collections[0],
+                    Images = new List<Image>() {
+                        new Image() {
+                            ProductId = 3,
+                            Path = "/assets/images/collections/earrings/products/lela-01.webp"
+                        },
+                        new Image() {
+                            ProductId = 3,
+                            Path = "/assets/images/collections/earrings/products/lela-02.webp"
+                        },
+                    }
+                },
             };
 
             _context.AddRange(products);
             _context.SaveChanges();
 
             return products;
+        }
+
+        private IList<Discount> AddDiscounts() {
+            var discounts = new List<Discount>() {
+                new() {
+                    Code = "FREE_DELIVER_FEE",
+                    Value = 30000,
+                    MinPrice = 250000,
+                    IsActive = true
+                }
+            };
+
+            _context.AddRange(discounts);
+            _context.SaveChanges();
+
+            return discounts;
         }
     }
 }

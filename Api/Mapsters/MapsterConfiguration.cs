@@ -1,4 +1,5 @@
-﻿using Core.DTO;
+﻿using Api.Models;
+using Core.DTO;
 using Core.Entities;
 using Mapster;
 
@@ -9,6 +10,8 @@ namespace Api.Mapsters {
             config.NewConfig<Image, ImageDTO>();
             config.NewConfig<Product, ProductDTO>().Map(dest => dest.Images, src => src.Images.Take(2));
             config.NewConfig<Product, ProductDetailDTO>();
+            config.NewConfig<Order, OrderModel>();
+            config.NewConfig<OrderProducts, OrderProductsModel>();
         }
     }
 }

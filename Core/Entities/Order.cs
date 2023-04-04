@@ -16,9 +16,11 @@ namespace Core.Entities {
 
         public string? AddressDescription { get; set; }
 
-        public string Notes { get; set; }
+        public string? Notes { get; set; }
 
         public double TotalPrice { get; set; }
+
+        public bool IsFreeDelivery { get; set; }
 
         public Discount Discount { get; set; }
 

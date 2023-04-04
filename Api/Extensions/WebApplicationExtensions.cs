@@ -13,6 +13,7 @@ namespace Api.Extensions {
             builder.Services.AddScoped<IMediaManager, LocalFileSystemMediaManager>();
             builder.Services.AddScoped<ICollectionRepository, CollectionRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
             return builder;
         }
