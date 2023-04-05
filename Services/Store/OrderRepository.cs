@@ -1,5 +1,6 @@
 ﻿using Core.Entities;
 using Data.Contexts;
+using Microsoft.EntityFrameworkCore;
 
 namespace Services.Store {
     public class OrderRepository : IOrderRepository {
@@ -24,6 +25,10 @@ namespace Services.Store {
                 order.TotalPrice = totalPrice;
                 order.IsFreeDelivery = isFreeDelivery;
 
+                foreach (var product in order.OrderProducts) {
+                    await IncreaseProductTotalSold(product.ProductId);
+                }
+
                 await _context.Set<Order>()
                     .AddAsync(order, cancellationToken);
                 await _context.SaveChangesAsync(cancellationToken);
@@ -44,6 +49,12 @@ namespace Services.Store {
                 totalPrice += freeDeliveryDiscount.Value;
                 isFreeDelivery = false;
             }
+        }
+
+        private async Task IncreaseProductTotalSold(int id, CancellationToken cancellationToken = default) {
+            await _context.Set<Product>()
+                .Where(p => p.Id == id)
+                .ExecuteUpdateAsync(p => p.SetProperty(x => x.TotalSold, x => x.TotalSold + 1), cancellationToken);
         }
     }
 }

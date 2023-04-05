@@ -32,6 +32,9 @@ namespace Data.Mappings {
                 .IsRequired()
                 .HasMaxLength(64);
 
+            builder.Property(p => p.TotalSold)
+                .HasDefaultValue(0);
+
             builder.Property(p => p.Ratings)
                 .HasDefaultValue(0);
 

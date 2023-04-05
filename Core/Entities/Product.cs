@@ -16,6 +16,8 @@ namespace Core.Entities {
 
         public string Type { get; set; }
 
+        public int TotalSold { get; set; }
+
         public int? Ratings { get; set; }
 
         public string Description { get; set; }
