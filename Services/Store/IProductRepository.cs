@@ -39,5 +39,13 @@ namespace Services.Store {
         /// <param name="cancellationToken"></param>
         /// <returns>A Product</returns>
         Task<Product> GetProductBySlugAsync(string slug, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Search Product by Keyword
+        /// </summary>
+        /// <param name="keyword">Search keyword</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<IList<Product>> SearchProductAsync(string keyword, CancellationToken cancellationToken = default);
     }
 }

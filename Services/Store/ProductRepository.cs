@@ -46,5 +46,13 @@ namespace Services.Store {
                 .Include(p => p.Images)
                 .FirstOrDefaultAsync(p => p.Slug == slug, cancellationToken);
         }
+
+        public async Task<IList<Product>> SearchProductAsync(string keyword, CancellationToken cancellationToken = default) {
+            return await _context.Set<Product>()
+                .Include(p => p.Images)
+                .Include(p => p.Collection)
+                .Where(p => p.Name.ToLower().Contains(keyword.ToLower()))
+                .ToListAsync(cancellationToken);
+        }
     }
 }

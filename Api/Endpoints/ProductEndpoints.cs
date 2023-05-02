@@ -20,6 +20,10 @@ namespace Api.Endpoints {
                 .WithName("GetCollectionRandomProductsBySlug")
                 .Produces<ApiResponse<IList<ProductDTO>>>();
 
+            routeGroupBuilder.MapPost("/search", SearchProduct)
+                .WithName("SearchProduct")
+                .Produces<ApiResponse<IList<ProductDTO>>>();
+
             return app;
         }
 
@@ -44,6 +48,13 @@ namespace Api.Endpoints {
             IProductRepository productRepository,
             IMapper mapper) {
             return Results.Ok(ApiResponse.Success(mapper.Map<IList<ProductDTO>>(await productRepository.GetCollectionRandomProductsBySlugAsync(slug, limit, currentProductSlug))));
+        }
+
+        private static async Task<IResult> SearchProduct(
+            SearchModel model,
+            IProductRepository productRepository,
+            IMapper mapper) {
+            return Results.Ok(ApiResponse.Success(mapper.Map<IList<ProductDTO>>(await productRepository.SearchProductAsync(model.Keyword))));
         }
     }
 }
