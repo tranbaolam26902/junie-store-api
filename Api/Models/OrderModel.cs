@@ -13,5 +13,9 @@
         public string? Notes { get; set; }
 
         public IList<OrderProductsModel> OrderProducts { get; set; }
+
+        public OrderModel() {
+            OrderProducts = new List<OrderProductsModel>();
+        }
     }
 }

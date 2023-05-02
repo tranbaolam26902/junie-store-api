@@ -1,4 +1,5 @@
-﻿using Api.Models;
+﻿using Api.Filters;
+using Api.Models;
 using Core.Entities;
 using MapsterMapper;
 using Services.Store;
@@ -11,6 +12,7 @@ namespace Api.Endpoints {
 
             routeGroupBuilder.MapPost("/", CreateOrder)
                 .WithName("CreateOrder")
+                .AddEndpointFilter<ValidatorFilter<OrderModel>>()
                 .Produces<ApiResponse<string>>();
 
             return app;
