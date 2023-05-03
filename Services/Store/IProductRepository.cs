@@ -66,5 +66,47 @@ namespace Services.Store {
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<IPagedList<T>> GetPagedProductsByQueriesAsync<T>(Func<IQueryable<Product>, IQueryable<T>> mapper, IProductQuery query, IPagingParams pagingParams, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Check whether slug existed or not
+        /// </summary>
+        /// <param name="id">Excluded product's id</param>
+        /// <param name="slug">Slug need to be checked</param>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
+        Task<bool> IsSlugExistedAsync(int id, string slug, CancellationToken cancellation = default);
+
+        /// <summary>
+        /// Create a new product or update if existed
+        /// </summary>
+        /// <param name="product">Product</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task CreateOrUpdateProductAsync(Product product, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Get Product's images by id
+        /// </summary>
+        /// <param name="id">Product's id</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<IList<Image>> GetProductImagesByIdAsync(int id, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Delete Product's images by id
+        /// </summary>
+        /// <param name="id">Product's id</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<bool> DeleteProductImagesByIdAsync(int id, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Add image to Product
+        /// </summary>
+        /// <param name="id">Product's id</param>
+        /// <param name="imageUrl">Image URL</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<bool> AddImageToProductAsync(int id, string imageUrl, CancellationToken cancellationToken = default);
     }
 }

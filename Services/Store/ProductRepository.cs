@@ -84,5 +84,51 @@ namespace Services.Store {
         public async Task<IPagedList<T>> GetPagedProductsByQueriesAsync<T>(Func<IQueryable<Product>, IQueryable<T>> mapper, IProductQuery query, IPagingParams pagingParams, CancellationToken cancellationToken = default) {
             return await mapper(FilterProduct(query).AsNoTracking()).ToPagedListAsync(pagingParams, cancellationToken);
         }
+
+        public async Task<bool> IsSlugExistedAsync(int id, string slug, CancellationToken cancellationToken = default) {
+            return await _context.Set<Product>()
+                .AnyAsync(p => p.Slug == slug && p.Id != id);
+        }
+
+        public async Task CreateOrUpdateProductAsync(Product product, CancellationToken cancellationToken = default) {
+            if (_context.Set<Product>().Any(s => s.Id == product.Id))
+                _context.Entry(product).State = EntityState.Modified;
+            else
+                _context.Products.Add(product);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task<IList<Image>> GetProductImagesByIdAsync(int id, CancellationToken cancellationToken = default) {
+            return await _context.Set<Image>()
+            .Where(s => s.ProductId == id)
+            .ToListAsync(cancellationToken);
+        }
+
+        public async Task<bool> DeleteProductImagesByIdAsync(int id, CancellationToken cancellationToken = default) {
+            var images = await _context.Set<Image>()
+                .Where(s => s.ProductId == id)
+                .ToListAsync(cancellationToken);
+
+            _context.Images.RemoveRange(images);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return true;
+        }
+
+        public async Task<bool> AddImageToProductAsync(int id, string imageUrl, CancellationToken cancellationToken = default) {
+            if (_context.Set<Product>().FirstOrDefault(p => p.Id == id) == null) {
+                return false;
+            }
+
+            var image = new Image() {
+                ProductId = id,
+                Path = imageUrl,
+            };
+
+            _context.Images.Add(image);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return true;
+        }
     }
 }

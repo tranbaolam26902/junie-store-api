@@ -1,10 +1,14 @@
 ﻿using Api.Models;
 using Core.Collections;
 using Core.DTO;
+using Core.Entities;
 using Mapster;
 using MapsterMapper;
+using Microsoft.AspNetCore.Mvc;
+using Services.Media;
 using Services.Queries;
 using Services.Store;
+using System.Net;
 
 namespace Api.Endpoints {
     public static class ProductEndpoints {
@@ -30,6 +34,15 @@ namespace Api.Endpoints {
             routeGroupBuilder.MapGet("/", GetProductsByQueries)
                 .WithName("GetProductsByQueries")
                 .Produces<ApiResponse<PaginationResult<ProductDTO>>>();
+
+            routeGroupBuilder.MapPost("/", CreateProduct)
+                .WithName("CreateProduct")
+                .Produces<ApiResponse<string>>();
+
+            routeGroupBuilder.MapPost("/{slug:regex(^[a-z0-9_-]+$)}/images", SetProductImages)
+                .WithName("SetProductImages")
+                .Accepts<IList<IFormFile>>("multipart/form-data")
+                .Produces<ApiResponse<string>>();
 
             return app;
         }
@@ -73,6 +86,62 @@ namespace Api.Endpoints {
             var paginationResult = new PaginationResult<ProductDTO>(products);
 
             return Results.Ok(ApiResponse.Success(paginationResult));
+        }
+
+        private static async Task<IResult> CreateProduct(
+            ProductEditModel model,
+            IMapper mapper,
+            IProductRepository productRepository) {
+            if (await productRepository.IsSlugExistedAsync(0, model.Slug)) {
+                return Results.Ok(ApiResponse.Fail(
+                    HttpStatusCode.Conflict,
+                    $"Slug {model.Slug} existed!"));
+            }
+
+            var product = mapper.Map<Product>(model);
+
+            product.Id = 0;
+
+            await productRepository.CreateOrUpdateProductAsync(product);
+            return Results.Ok(ApiResponse.Success("Success!"));
+        }
+
+        private static async Task<IResult> SetProductImages(
+        [FromRoute] string slug,
+        HttpContext context,
+        IProductRepository productRepository,
+        IMediaManager mediaManager) {
+            var files = context.Request.Form.Files;
+            var product = await productRepository.GetProductBySlugAsync(slug);
+            if (product == null) {
+                return Results.Ok(ApiResponse.Fail(
+                    HttpStatusCode.NotFound,
+                    $"Not found product with slug '{slug}'"));
+            }
+
+            var images = await productRepository.GetProductImagesByIdAsync(product.Id);
+
+            foreach (var image in images) {
+                await mediaManager.DeleteFileAsync(image.Path);
+            }
+
+            await productRepository.DeleteProductImagesByIdAsync(product.Id);
+
+            foreach (var file in files) {
+                var imageUrl = await mediaManager.SaveFileAsync(
+                    file.OpenReadStream(),
+                    file.FileName, file.ContentType);
+
+                if (string.IsNullOrWhiteSpace(imageUrl)) {
+                    return Results.Ok(ApiResponse.Fail(
+                        HttpStatusCode.BadRequest,
+                        "Không lưu được tệp"));
+                }
+
+                await productRepository.AddImageToProductAsync(product.Id, imageUrl);
+            }
+
+            return Results.Ok(ApiResponse.Success("Lưu thành công"));
         }
     }
 }

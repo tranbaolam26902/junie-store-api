@@ -9,8 +9,10 @@ namespace Api.Mapsters {
         public void Register(TypeAdapterConfig config) {
             config.NewConfig<Collection, CollectionDTO>().Map(dest => dest.ProductsCount, src => src.Products == null ? 0 : src.Products.Count);
             config.NewConfig<Image, ImageDTO>();
+            config.NewConfig<Product, ProductDTO>();
             config.NewConfig<Product, ProductDTO>().Map(dest => dest.Images, src => src.Images.Take(2));
             config.NewConfig<Product, ProductDetailDTO>();
+            config.NewConfig<ProductEditModel, Product>();
             config.NewConfig<ProductFilterModel, ProductQuery>();
             config.NewConfig<Order, OrderModel>();
             config.NewConfig<OrderProducts, OrderProductsModel>();

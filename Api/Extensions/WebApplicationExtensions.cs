@@ -62,5 +62,23 @@ namespace Api.Extensions {
 
             return app;
         }
+
+        public static WebApplication SetupContext(this WebApplication app) {
+            app.Use(async (context, next) => {
+                context.Request.EnableBuffering(); // Enable buffering to allow reading the body multiple times
+
+                var length = context.Request.ContentLength;
+                if (length != null && length > 0 && length > 33554432) // Check if the length of the request body exceeds the limit
+                {
+                    context.Response.StatusCode = StatusCodes.Status413RequestEntityTooLarge;
+                    await context.Response.WriteAsync("Request body too large");
+                    return;
+                }
+
+                await next();
+            });
+
+            return app;
+        }
     }
 }
