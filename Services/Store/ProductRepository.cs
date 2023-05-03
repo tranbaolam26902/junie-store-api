@@ -1,6 +1,8 @@
-﻿using Core.Entities;
+﻿using Core.Contracts;
+using Core.Entities;
 using Data.Contexts;
 using Microsoft.EntityFrameworkCore;
+using Services.Extensions;
 
 namespace Services.Store {
     public class ProductRepository : IProductRepository {
@@ -53,6 +55,34 @@ namespace Services.Store {
                 .Include(p => p.Collection)
                 .Where(p => p.Name.ToLower().Contains(keyword.ToLower()))
                 .ToListAsync(cancellationToken);
+        }
+
+        public IQueryable<Product> FilterProduct(IProductQuery query) {
+            IQueryable<Product> productQuery = _context.Set<Product>()
+                .Include(p => p.Collection)
+                .Include(p => p.Images.OrderBy(i => i.Id));
+
+            if (!string.IsNullOrWhiteSpace(query.Keyword)) {
+                productQuery = productQuery.Where(p => p.Name.ToLower().Contains(query.Keyword.ToLower()));
+            }
+
+            if (query.IsDiscounted) {
+                productQuery = productQuery.Where(p => p.Discount > 0);
+            }
+
+            if (query.IsOutOfStock) {
+                productQuery = productQuery.Where(p => p.Quantity == 0);
+            }
+
+            if (query.CollectionId != null && query.CollectionId != 0) {
+                productQuery = productQuery.Where(p => p.Collection.Id == query.CollectionId);
+            }
+
+            return productQuery;
+        }
+
+        public async Task<IPagedList<T>> GetPagedProductsByQueriesAsync<T>(Func<IQueryable<Product>, IQueryable<T>> mapper, IProductQuery query, IPagingParams pagingParams, CancellationToken cancellationToken = default) {
+            return await mapper(FilterProduct(query).AsNoTracking()).ToPagedListAsync(pagingParams, cancellationToken);
         }
     }
 }

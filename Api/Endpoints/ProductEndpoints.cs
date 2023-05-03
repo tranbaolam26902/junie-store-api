@@ -1,6 +1,9 @@
 ﻿using Api.Models;
+using Core.Collections;
 using Core.DTO;
+using Mapster;
 using MapsterMapper;
+using Services.Queries;
 using Services.Store;
 
 namespace Api.Endpoints {
@@ -23,6 +26,10 @@ namespace Api.Endpoints {
             routeGroupBuilder.MapPost("/search", SearchProduct)
                 .WithName("SearchProduct")
                 .Produces<ApiResponse<IList<ProductDTO>>>();
+
+            routeGroupBuilder.MapGet("/", GetProductsByQueries)
+                .WithName("GetProductsByQueries")
+                .Produces<ApiResponse<PaginationResult<ProductDTO>>>();
 
             return app;
         }
@@ -55,6 +62,17 @@ namespace Api.Endpoints {
             IProductRepository productRepository,
             IMapper mapper) {
             return Results.Ok(ApiResponse.Success(mapper.Map<IList<ProductDTO>>(await productRepository.SearchProductAsync(model.Keyword))));
+        }
+
+        private static async Task<IResult> GetProductsByQueries(
+            [AsParameters] ProductFilterModel model,
+            IMapper mapper,
+            IProductRepository productRepository) {
+            var query = mapper.Map<ProductQuery>(model);
+            var products = await productRepository.GetPagedProductsByQueriesAsync(p => p.ProjectToType<ProductDTO>(), query, model);
+            var paginationResult = new PaginationResult<ProductDTO>(products);
+
+            return Results.Ok(ApiResponse.Success(paginationResult));
         }
     }
 }

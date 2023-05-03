@@ -16,15 +16,26 @@ namespace Services.Extensions {
             return $"{column} {order}";
         }
 
-        public static async Task<IPagedList<T>> ToPagedListAsync<T>(this IQueryable<T> source, IPagingParams pagingParams, CancellationToken cancellationToken = default) {
-            var totalItemCount = await source.CountAsync(cancellationToken);
+        public static async Task<IPagedList<T>> ToPagedListAsync<T>(
+        this IQueryable<T> source,
+        IPagingParams pagingParams,
+        CancellationToken cancellationToken = default) {
+            var totalCount = await source.CountAsync(cancellationToken);
+
+            var pageNumber = pagingParams.PageNumber ?? 1;
+            var pageSize = pagingParams.PageSize ?? 10;
+
             var items = await source
                 .OrderBy(pagingParams.GetOrderExpression())
-                .Skip((pagingParams.PageNumber - 1) * pagingParams.PageSize)
-                .Take(pagingParams.PageSize)
-                .ToListAsync();
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
 
-            return new PagedList<T>(items, pagingParams.PageNumber, pagingParams.PageSize, totalItemCount);
+            return new PagedList<T>(
+                items,
+                pageNumber,
+                pageSize,
+                totalCount);
         }
 
         public static async Task<IPagedList<T>> ToPagedListAsync<T>(this IQueryable<T> source, int pageNumber = 1, int pageSize = 10, string sortColumn = "Id", string sortOrder = "DESC", CancellationToken cancellationToken = default) {

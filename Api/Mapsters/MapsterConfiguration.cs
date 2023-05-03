@@ -2,6 +2,7 @@
 using Core.DTO;
 using Core.Entities;
 using Mapster;
+using Services.Queries;
 
 namespace Api.Mapsters {
     public class MapsterConfiguration : IRegister {
@@ -10,6 +11,7 @@ namespace Api.Mapsters {
             config.NewConfig<Image, ImageDTO>();
             config.NewConfig<Product, ProductDTO>().Map(dest => dest.Images, src => src.Images.Take(2));
             config.NewConfig<Product, ProductDetailDTO>();
+            config.NewConfig<ProductFilterModel, ProductQuery>();
             config.NewConfig<Order, OrderModel>();
             config.NewConfig<OrderProducts, OrderProductsModel>();
         }

@@ -1,4 +1,5 @@
-﻿using Core.Entities;
+﻿using Core.Contracts;
+using Core.Entities;
 
 namespace Services.Store {
     public interface IProductRepository {
@@ -47,5 +48,23 @@ namespace Services.Store {
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<IList<Product>> SearchProductAsync(string keyword, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Filter Products by queries
+        /// </summary>
+        /// <param name="query">Product queries</param>
+        /// <returns></returns>
+        IQueryable<Product> FilterProduct(IProductQuery query);
+
+        /// <summary>
+        /// Paginate products filtered by queries
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="mapper"></param>
+        /// <param name="query"></param>
+        /// <param name="pagingParams"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<IPagedList<T>> GetPagedProductsByQueriesAsync<T>(Func<IQueryable<Product>, IQueryable<T>> mapper, IProductQuery query, IPagingParams pagingParams, CancellationToken cancellationToken = default);
     }
 }

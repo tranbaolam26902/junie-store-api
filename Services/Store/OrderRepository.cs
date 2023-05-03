@@ -27,6 +27,7 @@ namespace Services.Store {
 
                 foreach (var product in order.OrderProducts) {
                     await IncreaseProductTotalSoldAsync(product.ProductId, cancellationToken);
+                    await DecreaseQuantityAsync(product.ProductId, product.Quantity, cancellationToken);
                 }
 
                 await _context.Set<Order>()
@@ -55,6 +56,12 @@ namespace Services.Store {
             await _context.Set<Product>()
                 .Where(p => p.Id == id)
                 .ExecuteUpdateAsync(p => p.SetProperty(x => x.TotalSold, x => x.TotalSold + 1), cancellationToken);
+        }
+
+        private async Task DecreaseQuantityAsync(int id, int quantity, CancellationToken cancellationToken = default) {
+            await _context.Set<Product>()
+                .Where(p => p.Id == id)
+                .ExecuteUpdateAsync(p => p.SetProperty(x => x.Quantity, x => x.Quantity - quantity), cancellationToken);
         }
     }
 }
