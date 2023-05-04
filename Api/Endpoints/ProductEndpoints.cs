@@ -4,7 +4,7 @@ using Core.DTO;
 using Core.Entities;
 using Mapster;
 using MapsterMapper;
-using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Services.Media;
 using Services.Queries;
 using Services.Store;
@@ -37,12 +37,18 @@ namespace Api.Endpoints {
 
             routeGroupBuilder.MapPost("/", CreateProduct)
                 .WithName("CreateProduct")
-                .Produces<ApiResponse<string>>();
-
-            routeGroupBuilder.MapPost("/{slug:regex(^[a-z0-9_-]+$)}/images", SetProductImages)
-                .WithName("SetProductImages")
                 .Accepts<IList<IFormFile>>("multipart/form-data")
                 .Produces<ApiResponse<string>>();
+
+            routeGroupBuilder.MapPost("/update", UpdateProduct)
+                .WithName("UpdateProduct")
+                .Accepts<IList<IFormFile>>("multipart/form-data")
+                .Produces<ApiResponse<string>>();
+
+            //routeGroupBuilder.MapPost("/{slug:regex(^[a-z0-9_-]+$)}/images", SetProductImages)
+            //    .WithName("SetProductImages")
+            //    .Accepts<IList<IFormFile>>("multipart/form-data")
+            //    .Produces<ApiResponse<string>>();
 
             return app;
         }
@@ -89,59 +95,112 @@ namespace Api.Endpoints {
         }
 
         private static async Task<IResult> CreateProduct(
-            ProductEditModel model,
-            IMapper mapper,
+            HttpContext httpContext,
+            IMediaManager mediaManager,
             IProductRepository productRepository) {
-            if (await productRepository.IsSlugExistedAsync(0, model.Slug)) {
-                return Results.Ok(ApiResponse.Fail(
-                    HttpStatusCode.Conflict,
-                    $"Slug {model.Slug} existed!"));
-            }
-
-            var product = mapper.Map<Product>(model);
+            var productData = httpContext.Request.Form["model"];
+            var files = httpContext.Request.Form.Files;
+            var product = JsonConvert.DeserializeObject<Product>(productData);
 
             product.Id = 0;
 
+            if (await productRepository.IsSlugExistedAsync(product.Id, product.Slug))
+                return Results.Ok(ApiResponse.Fail(HttpStatusCode.Conflict, $"Slug {product.Slug} existed!"));
+
             await productRepository.CreateOrUpdateProductAsync(product);
+
+            var newProduct = await productRepository.GetProductBySlugAsync(product.Slug);
+
+            newProduct.Images = new List<Image>();
+            foreach (var file in files) {
+                var imageUrl = await mediaManager.SaveFileAsync(file.OpenReadStream(), file.FileName, file.ContentType);
+
+                if (string.IsNullOrWhiteSpace(imageUrl))
+                    return Results.Ok(ApiResponse.Fail(HttpStatusCode.BadRequest, "Cannot save file!"));
+
+                newProduct.Images.Add(new Image() {
+                    ProductId = newProduct.Id,
+                    Path = imageUrl
+                });
+            }
+
+            await productRepository.CreateOrUpdateProductAsync(newProduct);
+
             return Results.Ok(ApiResponse.Success("Success!"));
         }
 
-        private static async Task<IResult> SetProductImages(
-        [FromRoute] string slug,
-        HttpContext context,
-        IProductRepository productRepository,
-        IMediaManager mediaManager) {
-            var files = context.Request.Form.Files;
-            var product = await productRepository.GetProductBySlugAsync(slug);
-            if (product == null) {
-                return Results.Ok(ApiResponse.Fail(
-                    HttpStatusCode.NotFound,
-                    $"Not found product with slug '{slug}'"));
-            }
+        private static async Task<IResult> UpdateProduct(
+            HttpContext httpContext,
+            IMediaManager mediaManager,
+            IProductRepository productRepository) {
+            var productData = httpContext.Request.Form["model"];
+            var files = httpContext.Request.Form.Files;
+            var product = JsonConvert.DeserializeObject<Product>(productData);
+            var existedProduct = await productRepository.GetProductBySlugAsync(product.Slug);
+            var images = await productRepository.GetProductImagesByIdAsync(existedProduct.Id);
 
-            var images = await productRepository.GetProductImagesByIdAsync(product.Id);
+            existedProduct.Name = product.Name;
+            existedProduct.Price = product.Price;
+            existedProduct.Discount = product.Discount;
+            existedProduct.Quantity = product.Quantity;
+            existedProduct.Type = product.Type;
+            existedProduct.Description = product.Description;
+            existedProduct.UserManual = product.UserManual;
 
-            foreach (var image in images) {
+            foreach (var image in images)
                 await mediaManager.DeleteFileAsync(image.Path);
-            }
-
-            await productRepository.DeleteProductImagesByIdAsync(product.Id);
+            await productRepository.DeleteProductImagesByIdAsync(existedProduct.Id);
 
             foreach (var file in files) {
-                var imageUrl = await mediaManager.SaveFileAsync(
-                    file.OpenReadStream(),
-                    file.FileName, file.ContentType);
+                var imageUrl = await mediaManager.SaveFileAsync(file.OpenReadStream(), file.FileName, file.ContentType);
 
-                if (string.IsNullOrWhiteSpace(imageUrl)) {
-                    return Results.Ok(ApiResponse.Fail(
-                        HttpStatusCode.BadRequest,
-                        "Không lưu được tệp"));
-                }
+                if (string.IsNullOrWhiteSpace(imageUrl))
+                    return Results.Ok(ApiResponse.Fail(HttpStatusCode.BadRequest, "Cannot save file!"));
 
-                await productRepository.AddImageToProductAsync(product.Id, imageUrl);
+                await productRepository.AddImageToProductAsync(existedProduct.Id, imageUrl);
             }
 
-            return Results.Ok(ApiResponse.Success("Lưu thành công"));
+            await productRepository.CreateOrUpdateProductAsync(existedProduct);
+
+            return Results.Ok(ApiResponse.Success("Success!"));
         }
+
+        //private static async Task<IResult> SetProductImages(
+        //[FromRoute] string slug,
+        //HttpContext context,
+        //IProductRepository productRepository,
+        //IMediaManager mediaManager) {
+        //    var files = context.Request.Form.Files;
+        //    var product = await productRepository.GetProductBySlugAsync(slug);
+        //    if (product == null) {
+        //        return Results.Ok(ApiResponse.Fail(
+        //            HttpStatusCode.NotFound,
+        //            $"Not found product with slug '{slug}'"));
+        //    }
+
+        //    var images = await productRepository.GetProductImagesByIdAsync(product.Id);
+
+        //    foreach (var image in images) {
+        //        await mediaManager.DeleteFileAsync(image.Path);
+        //    }
+
+        //    await productRepository.DeleteProductImagesByIdAsync(product.Id);
+
+        //    foreach (var file in files) {
+        //        var imageUrl = await mediaManager.SaveFileAsync(
+        //            file.OpenReadStream(),
+        //            file.FileName, file.ContentType);
+
+        //        if (string.IsNullOrWhiteSpace(imageUrl)) {
+        //            return Results.Ok(ApiResponse.Fail(
+        //                HttpStatusCode.BadRequest,
+        //                "Không lưu được tệp"));
+        //        }
+
+        //        await productRepository.AddImageToProductAsync(product.Id, imageUrl);
+        //    }
+
+        //    return Results.Ok(ApiResponse.Success("Lưu thành công"));
+        //}
     }
 }
