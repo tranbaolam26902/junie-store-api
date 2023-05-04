@@ -1,7 +1,5 @@
-﻿using Core.Contracts;
-
-namespace Core.Entities {
-    public class Order : IEntity {
+﻿namespace Core.DTO {
+    public class OrderDTO {
         public int Id { get; set; }
 
         public DateTime OrderDate { get; set; }
@@ -24,8 +22,6 @@ namespace Core.Entities {
 
         public bool IsConfirmed { get; set; }
 
-        public Discount Discount { get; set; }
-
-        public IList<OrderProducts> OrderProducts { get; set; }
+        public IList<OrderProductsDTO> OrderProducts { get; set; }
     }
 }

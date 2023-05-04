@@ -1,6 +1,8 @@
-﻿using Core.Entities;
+﻿using Core.Contracts;
+using Core.Entities;
 using Data.Contexts;
 using Microsoft.EntityFrameworkCore;
+using Services.Extensions;
 
 namespace Services.Store {
     public class OrderRepository : IOrderRepository {
@@ -62,6 +64,42 @@ namespace Services.Store {
             await _context.Set<Product>()
                 .Where(p => p.Id == id)
                 .ExecuteUpdateAsync(p => p.SetProperty(x => x.Quantity, x => x.Quantity - quantity), cancellationToken);
+        }
+
+        public IQueryable<Order> FilterOrder(IOrderQuery query) {
+            IQueryable<Order> orderQuery = _context.Set<Order>()
+                .Include(o => o.OrderProducts);
+
+            if (!string.IsNullOrWhiteSpace(query.Keyword)) {
+                orderQuery = orderQuery.Where(
+                    p => p.Name.ToLower().Contains(query.Keyword.ToLower()) ||
+                        p.PhoneNumber.Contains(query.Keyword) ||
+                        p.Email.ToLower().Contains(query.Keyword.ToLower()) ||
+                        p.Address.ToLower().Contains(query.Keyword.ToLower()) ||
+                        p.AddressDescription.ToLower().Contains(query.Keyword.ToLower()) ||
+                        p.Notes.ToLower().Contains(query.Keyword.ToLower())
+                );
+            }
+
+            if (query.IsNotConfirmed) {
+                orderQuery = orderQuery.Where(p => p.IsConfirmed == false);
+            }
+
+            return orderQuery;
+        }
+
+        public async Task<IPagedList<T>> GetPagedOrdersByQueriesAsync<T>(Func<IQueryable<Order>, IQueryable<T>> mapper, IOrderQuery query, IPagingParams pagingParams, CancellationToken cancellationToken = default) {
+            return await mapper(FilterOrder(query).AsNoTracking()).ToPagedListAsync(pagingParams, cancellationToken);
+        }
+
+        public async Task<bool> ToggleOrderConfirmedStateAsync(int id, CancellationToken cancellationToken = default) {
+            await _context.Set<Order>()
+                .Where(o => o.Id == id)
+                .ExecuteUpdateAsync(o => o.SetProperty(o => o.IsConfirmed, o => !o.IsConfirmed), cancellationToken);
+            var order = await _context.Set<Order>()
+                .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+
+            return order.IsConfirmed;
         }
     }
 }

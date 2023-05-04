@@ -34,6 +34,9 @@ namespace Data.Mappings {
             builder.Property(o => o.Notes)
                 .HasMaxLength(1024);
 
+            builder.Property(o => o.IsConfirmed)
+                .HasDefaultValue(false);
+
             builder.HasMany(o => o.OrderProducts)
                 .WithOne(o => o.Order)
                 .HasForeignKey(o => o.OrderId)

@@ -15,7 +15,10 @@ namespace Api.Mapsters {
             config.NewConfig<ProductEditModel, Product>();
             config.NewConfig<ProductFilterModel, ProductQuery>();
             config.NewConfig<Order, OrderModel>();
+            config.NewConfig<Order, OrderDTO>();
             config.NewConfig<OrderProducts, OrderProductsModel>();
+            config.NewConfig<OrderProducts, OrderProductsDTO>().Map(dest => dest.ProductName, src => src.Product.Name);
+            config.NewConfig<OrderProducts, OrderProductsDTO>().Map(dest => dest.ImageUrl, src => src.Product.Images[0].Path);
         }
     }
 }
