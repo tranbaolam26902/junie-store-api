@@ -18,6 +18,8 @@
 
         public string UserManual { get; set; }
 
+        public int CollectionId { get; set; }
+
         public IList<ImageDTO> Images { get; set; }
     }
 }
