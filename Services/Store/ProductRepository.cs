@@ -130,5 +130,11 @@ namespace Services.Store {
 
             return true;
         }
+
+        public async Task<bool> DeleteProductBySlugAsync(string slug, CancellationToken cancellationToken = default) {
+            return await _context.Set<Product>()
+                .Where(p => p.Slug == slug)
+                .ExecuteDeleteAsync(cancellationToken) > 0;
+        }
     }
 }

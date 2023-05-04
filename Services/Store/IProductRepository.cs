@@ -108,5 +108,13 @@ namespace Services.Store {
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<bool> AddImageToProductAsync(int id, string imageUrl, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        ///  Delete Product by slug
+        /// </summary>
+        /// <param name="slug">Product's slug</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<bool> DeleteProductBySlugAsync(string slug, CancellationToken cancellationToken = default);
     }
 }

@@ -4,6 +4,7 @@ using Core.DTO;
 using Core.Entities;
 using Mapster;
 using MapsterMapper;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Services.Media;
 using Services.Queries;
@@ -44,6 +45,10 @@ namespace Api.Endpoints {
                 .WithName("UpdateProduct")
                 .Accepts<IList<IFormFile>>("multipart/form-data")
                 .Produces<ApiResponse<string>>();
+
+            routeGroupBuilder.MapPost("/delete/{slug:regex(^[a-z0-9_-]+$)}", DeleteProductBySlug)
+                .WithName("DeleteProductBySlug")
+                .Produces<ApiResponse<bool>>();
 
             //routeGroupBuilder.MapPost("/{slug:regex(^[a-z0-9_-]+$)}/images", SetProductImages)
             //    .WithName("SetProductImages")
@@ -163,6 +168,12 @@ namespace Api.Endpoints {
             await productRepository.CreateOrUpdateProductAsync(existedProduct);
 
             return Results.Ok(ApiResponse.Success("Success!"));
+        }
+
+        private static async Task<IResult> DeleteProductBySlug(
+            [FromRoute] string slug,
+            IProductRepository productRepository) {
+            return Results.Ok(ApiResponse.Success(await productRepository.DeleteProductBySlugAsync(slug)));
         }
 
         //private static async Task<IResult> SetProductImages(
